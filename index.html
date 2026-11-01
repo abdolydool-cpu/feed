@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#17152b" />
+    <meta name="description" content="Fun Arcade: a mobile-friendly collection of mini games." />
     <title>Fun Arcade</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%2317152b'/%3E%3Ccircle cx='32' cy='32' r='22' fill='%23ff7ae6'/%3E%3Cpath d='M32 18l5 12h12l-10 7 4 12-11-8-11 8 4-12-10-7h12z' fill='%23fff'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -14,20 +18,25 @@
       <header class="topbar">
         <div>
           <p class="eyebrow">Arcade Lounge</p>
-          <h1>Fun Hub</h1>
+          <h1>Fun Arcade</h1>
         </div>
-        <button id="randomGameBtn" class="secondary-btn">🎲 Random challenge</button>
+        <div class="topbar-actions">
+          <button id="installBtn" class="secondary-btn hidden">📲 Install app</button>
+          <button id="randomGameBtn" class="secondary-btn">🎲 Random</button>
+        </div>
       </header>
 
       <main class="main-layout">
         <aside class="sidebar">
           <div class="panel">
-            <h2>Pick a Game</h2>
+            <h2>Game list</h2>
             <div class="game-list">
               <button class="game-btn active" data-game="memory">🧠 Memory Match</button>
               <button class="game-btn" data-game="tictactoe">⭕ Tic-Tac-Toe</button>
               <button class="game-btn" data-game="reaction">⚡ Reaction Rush</button>
               <button class="game-btn" data-game="guess">🎯 Number Guess</button>
+              <button class="game-btn" data-game="rps">✊ Rock Paper Scissors</button>
+              <button class="game-btn" data-game="simon">🎵 Simon Says</button>
             </div>
           </div>
 
@@ -37,6 +46,8 @@
             <div class="score-row"><span>Tic Tac Toe</span><strong id="score-tictactoe">0</strong></div>
             <div class="score-row"><span>Reaction</span><strong id="score-reaction">0</strong></div>
             <div class="score-row"><span>Guess</span><strong id="score-guess">0</strong></div>
+            <div class="score-row"><span>RPS</span><strong id="score-rps">0</strong></div>
+            <div class="score-row"><span>Simon</span><strong id="score-simon">0</strong></div>
             <button id="resetScoresBtn" class="ghost-btn">Reset scores</button>
           </div>
         </aside>
