@@ -1,450 +1,86 @@
-:root {
-  --bg-1: #130f2f;
-  --bg-2: #20163d;
-  --bg-3: #2a1d4f;
-  --panel: rgba(18, 24, 48, 0.82);
-  --panel-soft: rgba(255, 255, 255, 0.06);
-  --border: rgba(255, 255, 255, 0.12);
-  --text: #f7f5ff;
-  --muted: #cec5f7;
-  --accent: #ff7ae6;
-  --accent-2: #74f0ff;
-  --accent-3: #ffd166;
-  --success: #6ee7a8;
-  --danger: #ff6a7d;
-  --shadow: rgba(13, 8, 24, 0.45);
-}
-
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: 'Fredoka', sans-serif;
-  background:
-    radial-gradient(circle at top, rgba(121, 96, 248, 0.45), transparent 30%),
-    linear-gradient(180deg, var(--bg-3), var(--bg-2) 35%, var(--bg-1) 100%);
-  color: var(--text);
-}
-
-button,
-input {
-  font: inherit;
-}
-
-button {
-  border: none;
-}
-
-.page-shell {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 20px 18px 45px;
-}
-
-.topbar,
-.stage-header,
-.score-row,
-.game-btn,
-.primary-btn,
-.secondary-btn,
-.ghost-btn,
-.topbar-actions,
-.control-row,
-.status-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.topbar {
-  gap: 16px;
-  margin-bottom: 28px;
-}
-
-.topbar-actions {
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.eyebrow {
-  margin: 0 0 6px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 0.7rem;
-}
-
-h1,
-h2,
-h3,
-p {
-  margin-top: 0;
-}
-
-h1 {
-  font-size: clamp(2.2rem, 5vw, 3.5rem);
-  margin-bottom: 0;
-}
-
-.main-layout {
-  display: grid;
-  grid-template-columns: minmax(260px, 320px) 1fr;
-  gap: 22px;
-}
-
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 26px;
-  box-shadow: 0 18px 40px var(--shadow);
-  backdrop-filter: blur(16px);
-}
-
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.sidebar .panel,
-.game-stage .panel {
-  padding: 22px 18px;
-}
-
-.game-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.game-btn,
-.primary-btn,
-.secondary-btn,
-.ghost-btn,
-.choice-btn,
-.move-btn,
-.simon-btn,
-.tic-cell,
-.memory-card {
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-}
-
-.game-btn,
-.primary-btn,
-.secondary-btn,
-.ghost-btn {
-  border-radius: 14px;
-  background: var(--panel-soft);
-  color: var(--text);
-  padding: 12px 14px;
-  min-height: 48px;
-}
-
-.game-btn:hover,
-.primary-btn:hover,
-.secondary-btn:hover,
-.ghost-btn:hover,
-.choice-btn:hover,
-.move-btn:hover,
-.simon-btn:hover,
-.tic-cell:hover,
-.memory-card:hover {
-  transform: translateY(-1px);
-}
-
-.game-btn.active {
-  background: linear-gradient(135deg, rgba(255,122,230,0.32), rgba(116,240,255,0.24));
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14);
-}
-
-.score-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.score-row {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
-  color: var(--muted);
-}
-
-.score-row strong {
-  color: var(--text);
-  font-size: 1.2rem;
-}
-
-.ghost-btn {
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--muted);
-}
-
-.game-stage {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.stage-header {
-  gap: 16px;
-}
-
-.primary-btn {
-  background: linear-gradient(135deg, var(--accent), #ff9d6c);
-  color: #1d102a;
-  font-weight: 700;
-  box-shadow: 0 12px 22px rgba(255, 122, 230, 0.25);
-}
-
-.secondary-btn {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.game-panel {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  padding: 22px 18px;
-}
-
-.game-panel h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 1.5rem;
-}
-
-.game-panel p {
-  color: var(--muted);
-}
-
-.status-row {
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 18px;
-  color: var(--muted);
-}
-
-.memory-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(70px, 1fr));
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.memory-card {
-  position: relative;
-  aspect-ratio: 1 / 1;
-  border-radius: 18px;
-  border: 1px solid var(--border);
-  background: linear-gradient(135deg, #4f3d8d, #232847);
-  color: var(--text);
-  font-size: clamp(2rem, 4vw, 2.6rem);
-  display: grid;
-  place-items: center;
-  user-select: none;
-}
-
-.memory-card span {
-  opacity: 0;
-  transform: scale(0.75);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.memory-card.revealed span,
-.memory-card.matched span {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.memory-card.revealed {
-  background: linear-gradient(135deg, rgba(116,240,255,0.26), rgba(255,122,230,0.2));
-}
-
-.memory-card.matched {
-  background: linear-gradient(135deg, rgba(110,231,168,0.26), rgba(116,240,255,0.18));
-}
-
-.tic-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(70px, 100px));
-  gap: 10px;
-  justify-content: center;
-  margin: 18px auto 0;
-}
-
-.tic-cell {
-  width: min(100%, 100px);
-  height: min(100px, 25vw);
-  border-radius: 18px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.04);
-  color: var(--text);
-  font-size: clamp(2rem, 6vw, 2.8rem);
-  font-weight: 700;
-}
-
-.reaction-area {
-  display: grid;
-  place-items: center;
-  min-height: 200px;
-  margin-top: 18px;
-}
-
-.reaction-btn {
-  width: min(100%, 360px);
-  min-height: 140px;
-  border-radius: 26px;
-  border: none;
-  font-size: clamp(1.15rem, 3vw, 2rem);
-  font-weight: 700;
-  cursor: pointer;
-  color: #091224;
-}
-
-.reaction-btn.waiting {
-  background: linear-gradient(135deg, #ffd166, #ff9d6c);
-}
-
-.reaction-btn.ready {
-  background: linear-gradient(135deg, #6ee7a8, #57d4ff);
-}
-
-.guess-box {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.guess-box input {
-  flex: 1 1 180px;
-  min-height: 52px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.04);
-  color: var(--text);
-  padding: 0 14px;
-  font-size: 1.05rem;
-}
-
-.guess-box button {
-  min-width: 124px;
-}
-
-.notice {
-  margin-top: 18px;
-  color: var(--muted);
-}
-
-.rps-grid,
-.simon-grid {
-  display: grid;
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.rps-grid {
-  grid-template-columns: repeat(3, minmax(90px, 1fr));
-}
-
-.choice-btn,
-.move-btn,
-.simon-btn {
-  border-radius: 18px;
-  min-height: 70px;
-  color: var(--text);
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.04);
-  font-weight: 600;
-}
-
-.choice-btn {
-  font-size: 1.1rem;
-}
-
-.simon-grid {
-  grid-template-columns: repeat(2, minmax(120px, 1fr));
-}
-
-.simon-btn {
-  min-height: 110px;
-  font-size: 2rem;
-}
-
-.simon-btn.red { background: linear-gradient(135deg, #ff6b7d, #ff3d66); }
-.simon-btn.blue { background: linear-gradient(135deg, #59c3ff, #3d75ff); }
-.simon-btn.green { background: linear-gradient(135deg, #71f0b6, #10b981); }
-.simon-btn.yellow { background: linear-gradient(135deg, #ffd75f, #ffb703); }
-
-.simon-btn.active {
-  filter: brightness(1.25);
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.14), 0 10px 24px rgba(255,255,255,0.12);
-}
-
-.hidden {
-  display: none !important;
-}
-
-@media (max-width: 860px) {
-  .main-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .topbar,
-  .stage-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .topbar-actions {
-    width: 100%;
-  }
-
-  .topbar-actions .secondary-btn {
-    flex: 1;
-  }
-}
-
-@media (max-width: 480px) {
-  .page-shell {
-    padding-inline: 12px;
-  }
-
-  .game-list {
-    gap: 10px;
-  }
-
-  .game-btn,
-  .primary-btn,
-  .secondary-btn,
-  .ghost-btn {
-    min-height: 46px;
-    padding: 10px 12px;
-    font-size: 0.96rem;
-  }
-
-  .memory-grid {
-    gap: 10px;
-  }
-
-  .tic-grid {
-    gap: 8px;
-  }
-
-  .rps-grid,
-  .simon-grid {
-    grid-template-columns: repeat(2, minmax(120px, 1fr));
-  }
-}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#17152b" />
+    <meta name="description" content="Fun Arcade — a polished browser game hub with fast mobile-friendly mini-games." />
+    <title>Fun Arcade</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%2317152b'/%3E%3Ccircle cx='32' cy='32' r='22' fill='%23ff7ae6'/%3E%3Cpath d='M32 18l5 12h12l-10 7 4 12-11-8-11 8 4-12-10-7h12z' fill='%23fff'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Arcade Lounge</p>
+          <h1>Fun Arcade</h1>
+        </div>
+        <div class="topbar-actions">
+          <button id="installBtn" class="secondary-btn hidden" aria-label="Install app">📲 Install app</button>
+          <button id="randomGameBtn" class="secondary-btn" aria-label="Open a random game">🎲 Random</button>
+        </div>
+      </header>
+
+      <section class="stats-row" aria-label="Arcade summary">
+        <article class="stat-card">
+          <span class="stat-label">Total wins</span>
+          <strong id="statWins">0</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Best reaction</span>
+          <strong id="statReaction">--</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Games played</span>
+          <strong id="statGames">0</strong>
+        </article>
+      </section>
+
+      <main class="main-layout">
+        <aside class="sidebar">
+          <div class="panel">
+            <h2>Game list</h2>
+            <div class="game-list">
+              <button class="game-btn active" data-game="memory">🧠 Memory Match</button>
+              <button class="game-btn" data-game="tictactoe">⭕ Tic-Tac-Toe</button>
+              <button class="game-btn" data-game="reaction">⚡ Reaction Rush</button>
+              <button class="game-btn" data-game="guess">🎯 Number Guess</button>
+              <button class="game-btn" data-game="rps">✊ Rock Paper Scissors</button>
+              <button class="game-btn" data-game="simon">🎵 Simon Says</button>
+            </div>
+          </div>
+
+          <div class="panel score-panel">
+            <h2>Scoreboard</h2>
+            <div class="score-row"><span>Memory</span><strong id="score-memory">0</strong></div>
+            <div class="score-row"><span>Tic Tac Toe</span><strong id="score-tictactoe">0</strong></div>
+            <div class="score-row"><span>Reaction</span><strong id="score-reaction">0</strong></div>
+            <div class="score-row"><span>Guess</span><strong id="score-guess">0</strong></div>
+            <div class="score-row"><span>RPS</span><strong id="score-rps">0</strong></div>
+            <div class="score-row"><span>Simon</span><strong id="score-simon">0</strong></div>
+            <button id="resetScoresBtn" class="ghost-btn" aria-label="Reset all scores">Reset scores</button>
+          </div>
+        </aside>
+
+        <section class="game-stage">
+          <div class="panel stage-header">
+            <div>
+              <p class="eyebrow">Current game</p>
+              <h2 id="gameTitle">Memory Match</h2>
+            </div>
+            <button id="newRoundBtn" class="primary-btn" aria-label="Play a new round">New round</button>
+          </div>
+
+          <div id="gameContent" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>

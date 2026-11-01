@@ -1,8 +1,8 @@
 # Fun Arcade
 
-A mobile-friendly mini game app with multiple arcade games in one place.
+A polished, mobile-friendly arcade web app with multiple mini-games in one place.
 
-## Games included
+## Included games
 - Memory Match
 - Tic-Tac-Toe
 - Reaction Rush
@@ -10,8 +10,15 @@ A mobile-friendly mini game app with multiple arcade games in one place.
 - Rock Paper Scissors
 - Simon Says
 
+## Features
+- Responsive layout for mobile and desktop
+- Score persistence between sessions using localStorage
+- Installable PWA support for mobile browsers
+- Clean arcade-style interface
+- Simple static HTML/CSS/JS setup
+
 ## Run locally
-Open the project folder and serve it with a simple local server:
+Open the project folder and launch a static server with any tool you prefer, for example:
 
 ```bash
 python -m http.server 8000
@@ -23,8 +30,21 @@ Then visit:
 http://localhost:8000
 ```
 
-## Mobile-friendly / installable web app
-This project also includes a web app manifest and service worker, so it can be installed on supported mobile browsers as a home-screen app.
+You can also simply open `index.html` directly in a browser.
 
-## APK note
-A true Android APK needs Android Studio / Capacitor or Expo packaging. This repo is set up as a mobile-friendly web app first, which is the fastest path to installability on mobile devices. If you want, the next step can be turning this into a Capacitor-based Android app.
+## Deploy to GitHub Pages
+1. Push the repo to GitHub
+2. Open the repository Settings
+3. Go to Pages
+4. Select Deploy from a branch
+5. Choose the `main` branch and root folder
+6. Save
+
+Your app will be available at:
+
+```text
+https://<username>.github.io/<repo>/
+```
+
+## Production note
+This is built as a premium static web app and is ideal for GitHub Pages or mobile browser install. A full Android APK requires Android Studio or another native packaging tool.

@@ -1,386 +1,478 @@
-const gameButtons = document.querySelectorAll('.game-btn');
-const gameTitle = document.getElementById('gameTitle');
-const gameContent = document.getElementById('gameContent');
-const newRoundBtn = document.getElementById('newRoundBtn');
-const randomGameBtn = document.getElementById('randomGameBtn');
-const resetScoresBtn = document.getElementById('resetScoresBtn');
+:root {
+  --bg-1: #130f2f;
+  --bg-2: #20163d;
+  --bg-3: #2a1d4f;
+  --panel: rgba(18, 24, 48, 0.82);
+  --panel-soft: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.14);
+  --text: #f7f5ff;
+  --muted: #cec5f7;
+  --accent: #ff7ae6;
+  --accent-2: #74f0ff;
+  --accent-3: #ffd166;
+  --success: #6ee7a8;
+  --danger: #ff6a7d;
+  --shadow: rgba(13, 8, 24, 0.45);
+}
 
-const gameNames = {
-  memory: 'Memory Match',
-  tictactoe: 'Tic-Tac-Toe',
-  reaction: 'Reaction Rush',
-  guess: 'Number Guess'
-};
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
 
-const state = {
-  currentGame: 'memory',
-  scores: {
-    memory: 0,
-    tictactoe: 0,
-    reaction: 0,
-    guess: 0
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Fredoka', sans-serif;
+  background: radial-gradient(circle at top, rgba(127, 102, 255, 0.38), transparent 25%),
+    linear-gradient(180deg, var(--bg-3), var(--bg-2) 35%, var(--bg-1) 100%);
+  color: var(--text);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: none;
+}
+
+.page-shell {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 22px 18px 42px;
+}
+
+.topbar,
+.stage-header,
+.score-row,
+.game-btn,
+.primary-btn,
+.secondary-btn,
+.ghost-btn,
+.topbar-actions,
+.status-row,
+.stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar {
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.topbar-actions {
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  margin-bottom: 0;
+}
+
+.stats-row {
+  gap: 14px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  flex: 1 1 170px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 18px 20px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+}
+
+.stat-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.stat-card strong {
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+}
+
+.main-layout {
+  display: grid;
+  grid-template-columns: minmax(270px, 320px) 1fr;
+  gap: 22px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  box-shadow: 0 18px 40px var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sidebar .panel,
+.game-stage .panel {
+  padding: 22px 18px;
+}
+
+.game-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.game-btn,
+.primary-btn,
+.secondary-btn,
+.ghost-btn,
+.choice-btn,
+.simon-btn,
+.tic-cell,
+.memory-card {
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.game-btn,
+.primary-btn,
+.secondary-btn,
+.ghost-btn {
+  border-radius: 14px;
+  background: var(--panel-soft);
+  color: var(--text);
+  padding: 12px 14px;
+  min-height: 48px;
+}
+
+.game-btn:hover,
+.primary-btn:hover,
+.secondary-btn:hover,
+.ghost-btn:hover,
+.choice-btn:hover,
+.simon-btn:hover,
+.tic-cell:hover,
+.memory-card:hover {
+  transform: translateY(-1px);
+}
+
+.game-btn.active {
+  background: linear-gradient(135deg, rgba(255,122,230,0.32), rgba(116,240,255,0.24));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14);
+}
+
+.score-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.score-row {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--muted);
+}
+
+.score-row strong {
+  color: var(--text);
+  font-size: 1.2rem;
+}
+
+.ghost-btn {
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+}
+
+.game-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.stage-header {
+  gap: 16px;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, var(--accent), #ff9d6c);
+  color: #1d102a;
+  font-weight: 700;
+  box-shadow: 0 12px 22px rgba(255, 122, 230, 0.25);
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.game-panel {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 22px 18px;
+}
+
+.game-panel h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.game-panel p {
+  color: var(--muted);
+}
+
+.status-row {
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+  color: var(--muted);
+}
+
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(70px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.memory-card {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, #4f3d8d, #232847);
+  color: var(--text);
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  display: grid;
+  place-items: center;
+  user-select: none;
+}
+
+.memory-card span {
+  opacity: 0;
+  transform: scale(0.75);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.memory-card.revealed span,
+.memory-card.matched span {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.memory-card.revealed {
+  background: linear-gradient(135deg, rgba(116,240,255,0.26), rgba(255,122,230,0.2));
+}
+
+.memory-card.matched {
+  background: linear-gradient(135deg, rgba(110,231,168,0.26), rgba(116,240,255,0.18));
+}
+
+.tic-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(70px, 100px));
+  gap: 10px;
+  justify-content: center;
+  margin: 18px auto 0;
+}
+
+.tic-cell {
+  width: min(100%, 100px);
+  height: min(100px, 25vw);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-size: clamp(2rem, 6vw, 2.8rem);
+  font-weight: 700;
+}
+
+.reaction-area {
+  display: grid;
+  place-items: center;
+  min-height: 200px;
+  margin-top: 18px;
+}
+
+.reaction-btn {
+  width: min(100%, 360px);
+  min-height: 140px;
+  border-radius: 26px;
+  border: none;
+  font-size: clamp(1.15rem, 3vw, 2rem);
+  font-weight: 700;
+  cursor: pointer;
+  color: #091224;
+}
+
+.reaction-btn.waiting {
+  background: linear-gradient(135deg, #ffd166, #ff9d6c);
+}
+
+.reaction-btn.ready {
+  background: linear-gradient(135deg, #6ee7a8, #57d4ff);
+}
+
+.guess-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.guess-box input {
+  flex: 1 1 180px;
+  min-height: 52px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  padding: 0 14px;
+  font-size: 1.05rem;
+}
+
+.guess-box button {
+  min-width: 124px;
+}
+
+.notice {
+  margin-top: 18px;
+  color: var(--muted);
+}
+
+.rps-grid,
+.simon-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.rps-grid {
+  grid-template-columns: repeat(3, minmax(90px, 1fr));
+}
+
+.choice-btn,
+.simon-btn {
+  border-radius: 18px;
+  min-height: 74px;
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  font-weight: 600;
+}
+
+.choice-btn {
+  font-size: 1.1rem;
+}
+
+.simon-grid {
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+}
+
+.simon-btn {
+  min-height: 110px;
+  font-size: 2rem;
+}
+
+.simon-btn.red { background: linear-gradient(135deg, #ff6b7d, #ff3d66); }
+.simon-btn.blue { background: linear-gradient(135deg, #59c3ff, #3d75ff); }
+.simon-btn.green { background: linear-gradient(135deg, #71f0b6, #10b981); }
+.simon-btn.yellow { background: linear-gradient(135deg, #ffd75f, #ffb703); }
+
+.simon-btn.active {
+  filter: brightness(1.25);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.14), 0 10px 24px rgba(255,255,255,0.12);
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 860px) {
+  .main-layout {
+    grid-template-columns: 1fr;
   }
-};
 
-function setActiveGame(gameKey) {
-  state.currentGame = gameKey;
-  gameTitle.textContent = gameNames[gameKey];
-  gameButtons.forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.game === gameKey);
-  });
-  renderGame();
-}
+  .topbar,
+  .stage-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 
-function updateScore(gameKey, value) {
-  state.scores[gameKey] = value;
-  const scoreEl = document.getElementById(`score-${gameKey}`);
-  if (scoreEl) scoreEl.textContent = value;
-}
+  .topbar-actions {
+    width: 100%;
+  }
 
-function renderGame() {
-  if (state.currentGame === 'memory') {
-    renderMemoryGame();
-  } else if (state.currentGame === 'tictactoe') {
-    renderTicTacToe();
-  } else if (state.currentGame === 'reaction') {
-    renderReactionGame();
-  } else {
-    renderGuessGame();
+  .topbar-actions .secondary-btn {
+    flex: 1;
   }
 }
 
-function randomGame() {
-  const keys = Object.keys(gameNames);
-  const randomKey = keys[Math.floor(Math.random() * keys.length)];
-  setActiveGame(randomKey);
-}
-
-function roundReset() {
-  if (state.currentGame === 'memory') {
-    startMemoryGame();
-  } else if (state.currentGame === 'tictactoe') {
-    startTicTacToe();
-  } else if (state.currentGame === 'reaction') {
-    resetReactionGame();
-  } else {
-    startGuessGame();
-  }
-}
-
-function resetAllScores() {
-  Object.keys(state.scores).forEach((key) => updateScore(key, 0));
-}
-
-gameButtons.forEach((button) => {
-  button.addEventListener('click', () => setActiveGame(button.dataset.game));
-});
-
-newRoundBtn.addEventListener('click', roundReset);
-randomGameBtn.addEventListener('click', randomGame);
-resetScoresBtn.addEventListener('click', resetAllScores);
-
-function renderMemoryGame() {
-  const emojis = ['🍉', '🍋', '🍇', '🍒', '🍓', '🍊', '🐶', '🦄'];
-  let cards = [];
-
-  const shuffled = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
-  shuffled.forEach((emoji, index) => {
-    cards.push(`
-      <button class="memory-card" data-index="${index}" data-emoji="${emoji}">
-        <span>${emoji}</span>
-      </button>
-    `);
-  });
-
-  gameContent.innerHTML = `
-    <div class="game-panel memory-panel">
-      <h3>Flip and match</h3>
-      <p>Match all pairs to win the round.</p>
-      <div class="memory-grid">${cards.join('')}</div>
-      <div class="status-row">
-        <span id="memoryStatus">Moves: 0</span>
-        <span id="memoryBadge">Pairs found: 0/8</span>
-      </div>
-    </div>
-  `;
-
-  const memoryState = {
-    flipped: [],
-    matched: 0,
-    moves: 0,
-    locked: false,
-    cards: [...document.querySelectorAll('.memory-card')]
-  };
-
-  const status = document.getElementById('memoryStatus');
-  const badge = document.getElementById('memoryBadge');
-
-  function handleFlip(card) {
-    if (card.classList.contains('revealed') || card.classList.contains('matched') || memoryState.locked) return;
-
-    card.classList.add('revealed');
-    memoryState.flipped.push(card);
-
-    if (memoryState.flipped.length === 2) {
-      memoryState.moves += 1;
-      status.textContent = `Moves: ${memoryState.moves}`;
-      const [first, second] = memoryState.flipped;
-
-      if (first.dataset.emoji === second.dataset.emoji) {
-        first.classList.add('matched');
-        second.classList.add('matched');
-        memoryState.matched += 1;
-        badge.textContent = `Pairs found: ${memoryState.matched}/8`;
-        memoryState.flipped = [];
-
-        if (memoryState.matched === 8) {
-          const points = Math.max(20 - memoryState.moves, 5);
-          updateScore('memory', state.scores.memory + points);
-          badge.textContent = `Pairs found: 8/8 · +${points} pts`;
-          status.textContent = `Moves: ${memoryState.moves} · You win!`;
-        }
-      } else {
-        memoryState.locked = true;
-        setTimeout(() => {
-          first.classList.remove('revealed');
-          second.classList.remove('revealed');
-          memoryState.flipped = [];
-          memoryState.locked = false;
-        }, 700);
-      }
-    }
+@media (max-width: 480px) {
+  .page-shell {
+    padding-inline: 12px;
   }
 
-  memoryState.cards.forEach((card) => {
-    card.addEventListener('click', () => handleFlip(card));
-  });
-}
-
-function renderTicTacToe() {
-  const board = Array(9).fill('');
-  let currentTurn = 'X';
-  let gameOver = false;
-
-  gameContent.innerHTML = `
-    <div class="game-panel">
-      <h3>First to three in a row</h3>
-      <p>Player X vs Player O</p>
-      <div class="tic-grid" id="ticBoard"></div>
-      <div class="status-row">
-        <span id="ticStatus">Player X's turn</span>
-        <span id="ticScore">Wins: ${state.scores.tictactoe}</span>
-      </div>
-    </div>
-  `;
-
-  const ticBoard = document.getElementById('ticBoard');
-  const ticStatus = document.getElementById('ticStatus');
-  const ticScore = document.getElementById('ticScore');
-
-  function checkWinner(arr) {
-    const patterns = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8],
-      [0, 3, 6], [1, 4, 7], [2, 5, 8],
-      [0, 4, 8], [2, 4, 6]
-    ];
-
-    for (const [a, b, c] of patterns) {
-      if (arr[a] && arr[a] === arr[b] && arr[a] === arr[c]) return arr[a];
-    }
-    return null;
+  .stat-card {
+    flex-basis: 100%;
   }
 
-  function renderBoard() {
-    ticBoard.innerHTML = board.map((cell, index) => `
-      <button class="tic-cell" data-index="${index}">${cell}</button>
-    `).join('');
-
-    ticBoard.querySelectorAll('.tic-cell').forEach((cell) => {
-      cell.addEventListener('click', () => {
-        if (gameOver) return;
-        const index = Number(cell.dataset.index);
-        if (board[index]) return;
-
-        board[index] = currentTurn;
-        cell.textContent = currentTurn;
-
-        const winner = checkWinner(board);
-        if (winner) {
-          gameOver = true;
-          ticStatus.textContent = `Player ${winner} wins!`;
-          updateScore('tictactoe', state.scores.tictactoe + 1);
-          ticScore.textContent = `Wins: ${state.scores.tictactoe}`;
-          return;
-        }
-
-        const isDraw = board.every(Boolean);
-        if (isDraw) {
-          gameOver = true;
-          ticStatus.textContent = "It's a draw!";
-          return;
-        }
-
-        currentTurn = currentTurn === 'X' ? 'O' : 'X';
-        ticStatus.textContent = `Player ${currentTurn}'s turn`;
-      });
-    });
+  .game-list {
+    gap: 10px;
   }
 
-  renderBoard();
-}
-
-function renderReactionGame() {
-  let isWaiting = false;
-  let startTime = 0;
-  let timeoutId = null;
-
-  gameContent.innerHTML = `
-    <div class="game-panel">
-      <h3>Tap when the color flips</h3>
-      <p>Wait for green, then click as fast as you can.</p>
-      <div class="reaction-area">
-        <button id="reactionButton" class="reaction-btn waiting">Wait for green...</button>
-      </div>
-      <div class="status-row">
-        <span id="reactionStatus">Ready?</span>
-      </div>
-    </div>
-  `;
-
-  const button = document.getElementById('reactionButton');
-  const reactionStatus = document.getElementById('reactionStatus');
-
-  function resetReactionGame() {
-    clearTimeout(timeoutId);
-    isWaiting = false;
-    button.className = 'reaction-btn waiting';
-    button.textContent = 'Wait for green...';
-    reactionStatus.textContent = 'Ready?';
+  .game-btn,
+  .primary-btn,
+  .secondary-btn,
+  .ghost-btn {
+    min-height: 46px;
+    padding: 10px 12px;
+    font-size: 0.96rem;
   }
 
-  function startRound() {
-    resetReactionGame();
-    const delay = 1500 + Math.random() * 2600;
-    timeoutId = setTimeout(() => {
-      isWaiting = true;
-      button.className = 'reaction-btn ready';
-      button.textContent = 'CLICK!';
-      reactionStatus.textContent = 'Now!';
-      startTime = performance.now();
-    }, delay);
+  .memory-grid {
+    gap: 10px;
   }
 
-  button.addEventListener('click', () => {
-    if (!isWaiting) {
-      reactionStatus.textContent = 'Too soon! Try again.';
-      button.className = 'reaction-btn waiting';
-      button.textContent = 'Wait for green...';
-      clearTimeout(timeoutId);
-      setTimeout(startRound, 700);
-      return;
-    }
-
-    const reactionTime = Math.round(performance.now() - startTime);
-    reactionStatus.textContent = `Your reaction: ${reactionTime}ms`;
-    updateScore('reaction', Math.max(state.scores.reaction, 1000 - reactionTime));
-    button.className = 'reaction-btn waiting';
-    button.textContent = 'Play again';
-    isWaiting = false;
-    setTimeout(startRound, 900);
-  });
-
-  startRound();
-}
-
-function renderGuessGame() {
-  let randomTarget = Math.floor(Math.random() * 100) + 1;
-  let remainingGuesses = 7;
-
-  gameContent.innerHTML = `
-    <div class="game-panel">
-      <h3>Guess the hidden number</h3>
-      <p>Pick a number from 1 to 100. You have 7 tries.</p>
-      <div class="guess-box">
-        <input id="guessInput" type="number" min="1" max="100" placeholder="Type a number" />
-        <button id="guessBtn" class="primary-btn">Guess</button>
-      </div>
-      <div class="notice" id="guessNotice">Make your first guess!</div>
-      <div class="status-row">
-        <span>Tries left: <strong id="triesLeft">7</strong></span>
-        <span>Best score: <strong id="guessBest">${state.scores.guess}</strong></span>
-      </div>
-    </div>
-  `;
-
-  const input = document.getElementById('guessInput');
-  const notice = document.getElementById('guessNotice');
-  const triesLeftEl = document.getElementById('triesLeft');
-  const guessBtn = document.getElementById('guessBtn');
-
-  function startGuessGame() {
-    randomTarget = Math.floor(Math.random() * 100) + 1;
-    remainingGuesses = 7;
-    notice.textContent = 'Make your first guess!';
-    triesLeftEl.textContent = '7';
-    input.value = '';
-    input.focus();
+  .tic-grid {
+    gap: 8px;
   }
 
-  guessBtn.addEventListener('click', () => {
-    const value = Number(input.value);
-    if (!value || value < 1 || value > 100) {
-      notice.textContent = 'Enter a valid number between 1 and 100.';
-      return;
-    }
-
-    remainingGuesses -= 1;
-    triesLeftEl.textContent = String(remainingGuesses);
-
-    if (value === randomTarget) {
-      notice.textContent = `🎉 Correct! ${randomTarget} was the number.`;
-      const bonus = remainingGuesses * 10 + 25;
-      updateScore('guess', Math.max(state.scores.guess, bonus));
-      document.getElementById('guessBest').textContent = state.scores.guess;
-      guessBtn.disabled = true;
-      return;
-    }
-
-    if (remainingGuesses <= 0) {
-      notice.textContent = `💥 Out of tries! The number was ${randomTarget}.`;
-      guessBtn.disabled = true;
-      return;
-    }
-
-    notice.textContent = value < randomTarget ? 'Too low — aim higher!' : 'Too high — go lower!';
-    input.value = '';
-    input.focus();
-  });
-
-  input.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') guessBtn.click();
-  });
-
-  startGuessGame();
+  .rps-grid,
+  .simon-grid {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
 }
-
-function startMemoryGame() {
-  renderMemoryGame();
-}
-
-function startTicTacToe() {
-  renderTicTacToe();
-}
-
-function startGuessGame() {
-  renderGuessGame();
-}
-
-function resetReactionGame() {
-  renderReactionGame();
-}
-
-setActiveGame(state.currentGame);
-
-window.addEventListener('beforeunload', () => {
-  Object.keys(state.scores).forEach((key) => state.scores[key] = Number(document.getElementById(`score-${key}`)?.textContent || 0));
-});

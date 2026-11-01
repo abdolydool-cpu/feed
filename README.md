@@ -1,10 +1,12 @@
-const gameButtons = document.querySelectorAll('.game-btn');
-const gameTitle = document.getElementById('gameTitle');
-const gameContent = document.getElementById('gameContent');
-const newRoundBtn = document.getElementById('newRoundBtn');
-const randomGameBtn = document.getElementById('randomGameBtn');
-const resetScoresBtn = document.getElementById('resetScoresBtn');
-const installBtn = document.getElementById('installBtn');
+const STORAGE_KEY = 'funArcadeState';
+const defaultScores = {
+  memory: 0,
+  tictactoe: 0,
+  reaction: 0,
+  guess: 0,
+  rps: 0,
+  simon: 0
+};
 
 const gameNames = {
   memory: 'Memory Match',
@@ -17,29 +19,69 @@ const gameNames = {
 
 const state = {
   currentGame: 'memory',
-  scores: {
-    memory: 0,
-    tictactoe: 0,
-    reaction: 0,
-    guess: 0,
-    rps: 0,
-    simon: 0
+  scores: loadScores(),
+  stat: {
+    totalWins: 0,
+    totalGames: 0,
+    bestReaction: null
   },
   deferredPrompt: null
 };
+
+function loadScores() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { ...defaultScores };
+    const parsed = JSON.parse(raw);
+    return { ...defaultScores, ...parsed.scores };
+  } catch (error) {
+    return { ...defaultScores };
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    scores: state.scores,
+    stat: state.stat
+  }));
+}
 
 function updateScore(gameKey, value) {
   state.scores[gameKey] = value;
   const scoreEl = document.getElementById(`score-${gameKey}`);
   if (scoreEl) scoreEl.textContent = value;
+  updateStats();
+  saveState();
+}
+
+function updateStats() {
+  const totalWins = Object.values(state.scores).reduce((sum, value) => sum + Number(value || 0), 0);
+  const bestReaction = Object.values({
+    reaction: state.scores.reaction
+  }).filter(Boolean).length ? Math.max(...Object.values({ reaction: state.scores.reaction }).filter(Boolean)) : null;
+
+  state.stat.totalWins = totalWins;
+  state.stat.totalGames = Math.max(0, totalWins + Math.max(0, Object.keys(state.scores).length - 1));
+  state.stat.bestReaction = bestReaction;
+
+  const winsEl = document.getElementById('statWins');
+  const gamesEl = document.getElementById('statGames');
+  const reactionEl = document.getElementById('statReaction');
+
+  if (winsEl) winsEl.textContent = totalWins;
+  if (gamesEl) gamesEl.textContent = state.stat.totalGames;
+  if (reactionEl) reactionEl.textContent = bestReaction ? `${bestReaction}ms` : '--';
 }
 
 function setActiveGame(gameKey) {
   state.currentGame = gameKey;
-  gameTitle.textContent = gameNames[gameKey];
-  gameButtons.forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.game === gameKey);
+  const titleEl = document.getElementById('gameTitle');
+  if (titleEl) titleEl.textContent = gameNames[gameKey];
+
+  document.querySelectorAll('.game-btn').forEach((button) => {
+    button.classList.toggle('active', button.dataset.game === gameKey);
   });
+
   renderGame();
 }
 
@@ -70,16 +112,18 @@ function renderGame() {
 
 function randomGame() {
   const keys = Object.keys(gameNames);
-  const randomKey = keys[Math.floor(Math.random() * keys.length)];
-  setActiveGame(randomKey);
-}
-
-function newRound() {
-  renderGame();
+  const key = keys[Math.floor(Math.random() * keys.length)];
+  setActiveGame(key);
 }
 
 function resetAllScores() {
-  Object.keys(state.scores).forEach((key) => updateScore(key, 0));
+  Object.keys(state.scores).forEach((key) => {
+    state.scores[key] = 0;
+    const scoreEl = document.getElementById(`score-${key}`);
+    if (scoreEl) scoreEl.textContent = 0;
+  });
+  updateStats();
+  saveState();
 }
 
 function renderMemoryGame() {
@@ -89,7 +133,7 @@ function renderMemoryGame() {
   gameContent.innerHTML = `
     <div class="game-panel">
       <h3>Flip and match</h3>
-      <p>Match all pairs to win the round.</p>
+      <p>Find every matching pair to finish the round.</p>
       <div class="memory-grid">
         ${cards.map((emoji, index) => `
           <button class="memory-card" data-index="${index}" data-emoji="${emoji}" aria-label="Memory card ${index + 1}">
@@ -238,7 +282,7 @@ function renderReactionGame() {
       <h3>Tap when the color flips</h3>
       <p>Wait for green, then click as fast as you can.</p>
       <div class="reaction-area">
-        <button id="reactionButton" class="reaction-btn waiting">Wait for green...</button>
+        <button id="reactionButton" class="reaction-btn waiting" aria-label="Reaction button">Wait for green...</button>
       </div>
       <div class="status-row">
         <span id="reactionStatus">Ready?</span>
@@ -281,7 +325,11 @@ function renderReactionGame() {
 
     const reactionTime = Math.round(performance.now() - startTime);
     reactionStatus.textContent = `Your reaction: ${reactionTime}ms`;
-    updateScore('reaction', Math.max(state.scores.reaction, 1000 - reactionTime));
+
+    const best = state.scores.reaction || 10000;
+    const newBest = Math.min(best, reactionTime);
+    updateScore('reaction', newBest);
+
     button.className = 'reaction-btn waiting';
     button.textContent = 'Play again';
     isWaiting = false;
@@ -317,9 +365,9 @@ function renderGuessGame() {
   const guessBtn = document.getElementById('guessBtn');
   const guessBestEl = document.getElementById('guessBest');
 
-  function updateBest() {
+  const updateBest = () => {
     guessBestEl.textContent = state.scores.guess;
-  }
+  };
 
   input.focus();
 
@@ -403,7 +451,7 @@ function renderRPSGame() {
 function renderSimonGame() {
   const colors = ['red', 'blue', 'green', 'yellow'];
   const labels = ['🔴', '🔵', '🟢', '🟡'];
-  const stateRef = {
+  const simonState = {
     sequence: [],
     userIndex: 0,
     locked: false,
@@ -434,61 +482,57 @@ function renderSimonGame() {
     const button = document.querySelector(`.simon-btn.${color}`);
     if (!button) return;
     button.classList.add('active');
-    setTimeout(() => button.classList.remove('active'), 350);
+    setTimeout(() => button.classList.remove('active'), 330);
   }
 
   function playSequence() {
-    stateRef.locked = true;
-    stateRef.userIndex = 0;
+    simonState.locked = true;
+    simonState.userIndex = 0;
 
     let delay = 0;
-    stateRef.sequence.forEach((color) => {
+    simonState.sequence.forEach((color) => {
       delay += 450;
       setTimeout(() => flashButton(color), delay);
     });
 
     setTimeout(() => {
-      stateRef.locked = false;
-      statusEl.textContent = `Your turn · Level ${stateRef.round}`;
+      simonState.locked = false;
+      statusEl.textContent = `Your turn · Level ${simonState.round}`;
     }, delay + 400);
   }
 
   function addStep() {
     const nextColor = colors[Math.floor(Math.random() * colors.length)];
-    stateRef.sequence.push(nextColor);
-    stateRef.round += 1;
-    statusEl.textContent = `Watch closely · Level ${stateRef.round}`;
+    simonState.sequence.push(nextColor);
+    simonState.round += 1;
+    statusEl.textContent = `Watch closely · Level ${simonState.round}`;
     playSequence();
   }
 
   function handleGuess(color) {
-    if (stateRef.locked) return;
+    if (simonState.locked) return;
 
     flashButton(color);
 
-    if (stateRef.sequence[stateRef.userIndex] !== color) {
-      const newBest = Math.max(state.scores.simon, stateRef.round - 1);
+    if (simonState.sequence[simonState.userIndex] !== color) {
+      const newBest = Math.max(state.scores.simon, simonState.round - 1);
       updateScore('simon', newBest);
       scoreEl.textContent = state.scores.simon;
-      statusEl.textContent = `Wrong! Final level: ${stateRef.round - 1}. Try again.`;
-      stateRef.sequence = [];
-      stateRef.userIndex = 0;
-      stateRef.round = 0;
-      setTimeout(() => {
-        addStep();
-      }, 1200);
+      statusEl.textContent = `Wrong! Final level: ${simonState.round - 1}. Try again.`;
+      simonState.sequence = [];
+      simonState.userIndex = 0;
+      simonState.round = 0;
+      setTimeout(() => addStep(), 1200);
       return;
     }
 
-    stateRef.userIndex += 1;
+    simonState.userIndex += 1;
 
-    if (stateRef.userIndex === stateRef.sequence.length) {
-      const levelValue = stateRef.round;
+    if (simonState.userIndex === simonState.sequence.length) {
+      const levelValue = simonState.round;
       updateScore('simon', Math.max(state.scores.simon, levelValue));
       scoreEl.textContent = state.scores.simon;
-      setTimeout(() => {
-        addStep();
-      }, 800);
+      setTimeout(() => addStep(), 800);
     }
   }
 
@@ -502,7 +546,8 @@ function renderSimonGame() {
 function handleInstallPrompt(event) {
   event.preventDefault();
   state.deferredPrompt = event;
-  installBtn.classList.remove('hidden');
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) installBtn.classList.remove('hidden');
 }
 
 async function installApp() {
@@ -510,7 +555,8 @@ async function installApp() {
   state.deferredPrompt.prompt();
   await state.deferredPrompt.userChoice;
   state.deferredPrompt = null;
-  installBtn.classList.add('hidden');
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) installBtn.classList.add('hidden');
 }
 
 if ('serviceWorker' in navigator) {
@@ -522,14 +568,22 @@ if ('serviceWorker' in navigator) {
 }
 
 window.addEventListener('beforeinstallprompt', handleInstallPrompt);
-installBtn.addEventListener('click', installApp);
 
-gameButtons.forEach((button) => {
-  button.addEventListener('click', () => setActiveGame(button.dataset.game));
+document.addEventListener('DOMContentLoaded', () => {
+  updateStats();
+  Object.entries(defaultScores).forEach(([key, value]) => {
+    const scoreEl = document.getElementById(`score-${key}`);
+    if (scoreEl) scoreEl.textContent = state.scores[key] || value;
+  });
+
+  document.getElementById('installBtn')?.addEventListener('click', installApp);
+  document.getElementById('newRoundBtn')?.addEventListener('click', () => renderGame());
+  document.getElementById('randomGameBtn')?.addEventListener('click', randomGame);
+  document.getElementById('resetScoresBtn')?.addEventListener('click', resetAllScores);
+
+  document.querySelectorAll('.game-btn').forEach((button) => {
+    button.addEventListener('click', () => setActiveGame(button.dataset.game));
+  });
+
+  setActiveGame(state.currentGame);
 });
-
-newRoundBtn.addEventListener('click', newRound);
-randomGameBtn.addEventListener('click', randomGame);
-resetScoresBtn.addEventListener('click', resetAllScores);
-
-setActiveGame(state.currentGame);
