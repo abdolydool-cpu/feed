@@ -1,50 +1,560 @@
-# Fun Arcade
+const STORAGE_KEY = 'fun-arcade-state-v2';
+const defaultScores = {
+  memory: 0,
+  tictactoe: 0,
+  reaction: 0,
+  guess: 0,
+  rps: 0,
+  simon: 0
+};
 
-A polished, mobile-friendly arcade web app with multiple mini-games in one place.
+const gameNames = {
+  memory: 'Memory Match',
+  tictactoe: 'Tic-Tac-Toe',
+  reaction: 'Reaction Rush',
+  guess: 'Number Guess',
+  rps: 'Rock Paper',
+  simon: 'Simon Says'
+};
 
-## Included games
-- Memory Match
-- Tic-Tac-Toe
-- Reaction Rush
-- Number Guess
-- Rock Paper Scissors
-- Simon Says
+const state = {
+  currentGame: 'memory',
+  scores: loadScores(),
+  deferredPrompt: null
+};
 
-## Features
-- Responsive layout for mobile and desktop
-- Score persistence between sessions using localStorage
-- Installable PWA support for mobile browsers
-- Clean arcade-style interface
-- Simple static HTML/CSS/JS setup
+function loadScores() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return { ...defaultScores };
+    const parsed = JSON.parse(saved);
+    return { ...defaultScores, ...parsed.scores };
+  } catch (error) {
+    return { ...defaultScores };
+  }
+}
 
-## Run locally
-Open the project folder and launch a static server with any tool you prefer, for example:
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ scores: state.scores }));
+}
 
-```bash
-python -m http.server 8000
-```
+function updateScore(gameKey, value) {
+  state.scores[gameKey] = Number(value) || 0;
+  const scoreEl = document.getElementById(`score-${gameKey}`);
+  if (scoreEl) scoreEl.textContent = String(state.scores[gameKey]);
+  updateStats();
+  saveState();
+}
 
-Then visit:
+function updateStats() {
+  const winsTotal = Object.values(state.scores).reduce((sum, value) => sum + Number(value || 0), 0);
+  const reactionBest = state.scores.reaction ? state.scores.reaction : null;
+  const gamesTotal = Object.keys(state.scores).length;
 
-```text
-http://localhost:8000
-```
+  const winsEl = document.getElementById('statWins');
+  const reactionEl = document.getElementById('statReaction');
+  const gamesEl = document.getElementById('statGames');
 
-You can also simply open `index.html` directly in a browser.
+  if (winsEl) winsEl.textContent = String(winsTotal);
+  if (reactionEl) reactionEl.textContent = reactionBest ? `${reactionBest}ms` : '--';
+  if (gamesEl) gamesEl.textContent = String(gamesTotal);
+}
 
-## Deploy to GitHub Pages
-1. Push the repo to GitHub
-2. Open the repository Settings
-3. Go to Pages
-4. Select Deploy from a branch
-5. Choose the `main` branch and root folder
-6. Save
+function setActiveGame(gameKey) {
+  state.currentGame = gameKey;
+  const titleEl = document.getElementById('gameTitle');
+  if (titleEl) titleEl.textContent = gameNames[gameKey];
 
-Your app will be available at:
+  document.querySelectorAll('.game-btn').forEach((button) => {
+    button.classList.toggle('active', button.dataset.game === gameKey);
+  });
 
-```text
-https://<username>.github.io/<repo>/
-```
+  renderGame();
+}
 
-## Production note
-This is built as a premium static web app and is ideal for GitHub Pages or mobile browser install. A full Android APK requires Android Studio or another native packaging tool.
+function randomGame() {
+  const keys = Object.keys(gameNames);
+  const key = keys[Math.floor(Math.random() * keys.length)];
+  setActiveGame(key);
+}
+
+function renderGame() {
+  const game = state.currentGame;
+  if (game === 'memory') return renderMemoryGame();
+  if (game === 'tictactoe') return renderTicTacToe();
+  if (game === 'reaction') return renderReactionGame();
+  if (game === 'guess') return renderGuessGame();
+  if (game === 'rps') return renderRPSGame();
+  if (game === 'simon') return renderSimonGame();
+}
+
+function renderMemoryGame() {
+  const emojis = ['🍉', '🍋', '🍇', '🍒', '🍓', '🍊', '🐶', '🦄'];
+  const cards = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+
+  const wrapper = document.getElementById('gameContent');
+  wrapper.innerHTML = `
+    <div class="game-panel">
+      <h3>Flip and match</h3>
+      <p>Match all pairs before the board gets wild.</p>
+      <div class="memory-grid">
+        ${cards.map((emoji, index) => `
+          <button class="memory-card" data-index="${index}" data-emoji="${emoji}" aria-label="Memory card ${index + 1}">
+            <span>${emoji}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="status-row">
+        <span id="memoryStatus">Moves: 0</span>
+        <span id="memoryBadge">Pairs: 0/8</span>
+      </div>
+    </div>
+  `;
+
+  const memoryState = {
+    flipped: [],
+    matched: 0,
+    moves: 0,
+    locked: false,
+    itemEls: [...document.querySelectorAll('.memory-card')]
+  };
+
+  const status = document.getElementById('memoryStatus');
+  const badge = document.getElementById('memoryBadge');
+
+  function handleFlip(card) {
+    if (card.classList.contains('revealed') || card.classList.contains('matched') || memoryState.locked) return;
+
+    card.classList.add('revealed');
+    memoryState.flipped.push(card);
+
+    if (memoryState.flipped.length === 2) {
+      memoryState.moves += 1;
+      status.textContent = `Moves: ${memoryState.moves}`;
+      const [first, second] = memoryState.flipped;
+
+      if (first.dataset.emoji === second.dataset.emoji) {
+        first.classList.add('matched');
+        second.classList.add('matched');
+        memoryState.matched += 1;
+        badge.textContent = `Pairs: ${memoryState.matched}/8`;
+        memoryState.flipped = [];
+
+        if (memoryState.matched === 8) {
+          const pts = Math.max(20 - memoryState.moves, 5);
+          updateScore('memory', state.scores.memory + pts);
+          badge.textContent = `Pairs: 8/8 · +${pts}`;
+          status.textContent = `Moves: ${memoryState.moves} · Winner!`;
+        }
+      } else {
+        memoryState.locked = true;
+        setTimeout(() => {
+          first.classList.remove('revealed');
+          second.classList.remove('revealed');
+          memoryState.flipped = [];
+          memoryState.locked = false;
+        }, 700);
+      }
+    }
+  }
+
+  memoryState.itemEls.forEach((card) => {
+    card.addEventListener('click', () => handleFlip(card));
+  });
+}
+
+function renderTicTacToe() {
+  const board = Array(9).fill('');
+  let currentTurn = 'X';
+  let gameOver = false;
+
+  const wrapper = document.getElementById('gameContent');
+  wrapper.innerHTML = `
+    <div class="game-panel">
+      <h3>First to three</h3>
+      <p>Classic tic-tac-toe with pure arcade energy.</p>
+      <div class="tic-grid" id="ticBoard"></div>
+      <div class="status-row">
+        <span id="ticStatus">Player X's turn</span>
+        <span>Wins: <strong id="ticScore">${state.scores.tictactoe}</strong></span>
+      </div>
+    </div>
+  `;
+
+  const boardEl = document.getElementById('ticBoard');
+  const statusEl = document.getElementById('ticStatus');
+  const scoreEl = document.getElementById('ticScore');
+
+  function checkWinner(arr) {
+    const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for (const [a, b, c] of lines) {
+      if (arr[a] && arr[a] === arr[b] && arr[a] === arr[c]) return arr[a];
+    }
+    return null;
+  }
+
+  function drawBoard() {
+    boardEl.innerHTML = board.map((cell, index) => `
+      <button class="tic-cell" data-index="${index}" aria-label="Cell ${index + 1}">${cell}</button>
+    `).join('');
+
+    boardEl.querySelectorAll('.tic-cell').forEach((cell) => {
+      cell.addEventListener('click', () => {
+        if (gameOver) return;
+        const i = Number(cell.dataset.index);
+        if (board[i]) return;
+
+        board[i] = currentTurn;
+        cell.textContent = currentTurn;
+
+        const winner = checkWinner(board);
+        if (winner) {
+          gameOver = true;
+          statusEl.textContent = `Player ${winner} wins!`;
+          updateScore('tictactoe', state.scores.tictactoe + 1);
+          scoreEl.textContent = String(state.scores.tictactoe);
+          return;
+        }
+
+        if (board.every(Boolean)) {
+          gameOver = true;
+          statusEl.textContent = "Draw game!";
+          return;
+        }
+
+        currentTurn = currentTurn === 'X' ? 'O' : 'X';
+        statusEl.textContent = `Player ${currentTurn}'s turn`;
+      });
+    });
+  }
+
+  drawBoard();
+}
+
+function renderReactionGame() {
+  let isWaiting = false;
+  let startTime = 0;
+  let timer = null;
+
+  const wrapper = document.getElementById('gameContent');
+  wrapper.innerHTML = `
+    <div class="game-panel">
+      <h3>Reaction Rush</h3>
+      <p>Wait for green. Then tap instantly.</p>
+      <div class="reaction-area">
+        <button id="reactionButton" class="reaction-btn waiting">Wait for green...</button>
+      </div>
+      <div class="status-row">
+        <span id="reactionStatus">Game ready</span>
+      </div>
+    </div>
+  `;
+
+  const button = document.getElementById('reactionButton');
+  const statusEl = document.getElementById('reactionStatus');
+
+  function startRound() {
+    clearTimeout(timer);
+    isWaiting = false;
+    button.className = 'reaction-btn waiting';
+    button.textContent = 'Wait for green...';
+    statusEl.textContent = 'Game ready';
+
+    const delay = 1400 + Math.random() * 2400;
+    timer = setTimeout(() => {
+      isWaiting = true;
+      button.className = 'reaction-btn ready';
+      button.textContent = 'CLICK!';
+      statusEl.textContent = 'Now!';
+      startTime = performance.now();
+    }, delay);
+  }
+
+  button.addEventListener('click', () => {
+    if (!isWaiting) {
+      statusEl.textContent = 'Too soon!';
+      clearTimeout(timer);
+      setTimeout(startRound, 700);
+      return;
+    }
+
+    const reactionMs = Math.round(performance.now() - startTime);
+    const best = Number(state.scores.reaction) || 9999;
+    const nextBest = Math.min(best, reactionMs);
+    updateScore('reaction', nextBest);
+    statusEl.textContent = `Reaction: ${reactionMs}ms`;
+    button.className = 'reaction-btn waiting';
+    button.textContent = 'Play again';
+    isWaiting = false;
+    setTimeout(startRound, 900);
+  });
+
+  startRound();
+}
+
+function renderGuessGame() {
+  let target = Math.floor(Math.random() * 100) + 1;
+  let tries = 7;
+
+  const wrapper = document.getElementById('gameContent');
+  wrapper.innerHTML = `
+    <div class="game-panel">
+      <h3>Number Guess</h3>
+      <p>Guess the hidden number between 1 and 100.</p>
+      <div class="guess-box">
+        <input id="guessInput" type="number" min="1" max="100" placeholder="Type a number" />
+        <button id="guessBtn" class="primary-btn">Guess</button>
+      </div>
+      <div class="notice" id="guessNotice">Make your first guess!</div>
+      <div class="status-row">
+        <span>Tries: <strong id="triesLeft">7</strong></span>
+        <span>Best: <strong id="guessBest">${state.scores.guess}</strong></span>
+      </div>
+    </div>
+  `;
+
+  const input = document.getElementById('guessInput');
+  const guessBtn = document.getElementById('guessBtn');
+  const notice = document.getElementById('guessNotice');
+  const triesLeft = document.getElementById('triesLeft');
+  const bestEl = document.getElementById('guessBest');
+
+  function updateBest() {
+    bestEl.textContent = String(state.scores.guess);
+  }
+
+  guessBtn.addEventListener('click', () => {
+    const value = Number(input.value);
+    if (!value || value < 1 || value > 100) {
+      notice.textContent = 'Pick a number from 1 to 100.';
+      return;
+    }
+
+    tries -= 1;
+    triesLeft.textContent = String(tries);
+
+    if (value === target) {
+      const bonus = tries * 10 + 25;
+      updateScore('guess', Math.max(state.scores.guess, bonus));
+      updateBest();
+      notice.textContent = `Correct! ${target} was the number. +${bonus}`;
+      guessBtn.disabled = true;
+      return;
+    }
+
+    if (tries <= 0) {
+      notice.textContent = `No more tries. The number was ${target}.`;
+      guessBtn.disabled = true;
+      return;
+    }
+
+    notice.textContent = value < target ? 'Too low. Aim higher!' : 'Too high. Go lower!';
+    input.value = '';
+    input.focus();
+  });
+
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') guessBtn.click();
+  });
+}
+
+function renderRPSGame() {
+  const choices = ['✊', '✋', '✌️'];
+  const names = ['Rock', 'Paper', 'Scissors'];
+
+  const wrapper = document.getElementById('gameContent');
+  wrapper.innerHTML = `
+    <div class="game-panel">
+      <h3>Rock Paper</h3>
+      <p>Fight the machine with pure style.</p>
+      <div class="rps-grid">
+        ${choices.map((icon, index) => `
+          <button class="choice-btn" data-choice="${index}">${icon} ${names[index]}</button>
+        `).join('')}
+      </div>
+      <div class="status-row">
+        <span id="rpsStatus">Choose your move</span>
+        <span>Wins: <strong id="rpsScore">${state.scores.rps}</strong></span>
+      </div>
+    </div>
+  `;
+
+  const statusEl = document.getElementById('rpsStatus');
+  const scoreEl = document.getElementById('rpsScore');
+
+  document.querySelectorAll('.choice-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      const userChoice = Number(button.dataset.choice);
+      const computerChoice = Math.floor(Math.random() * 3);
+      const result = (userChoice - computerChoice + 3) % 3;
+
+      if (result === 0) {
+        statusEl.textContent = `Draw! Both picked ${names[userChoice]}.`;
+      } else if (result === 1) {
+        statusEl.textContent = `You win! ${names[userChoice]} beats ${names[computerChoice]}.`;
+        updateScore('rps', state.scores.rps + 1);
+        scoreEl.textContent = String(state.scores.rps);
+      } else {
+        statusEl.textContent = `Computer wins! ${names[computerChoice]} beats ${names[userChoice]}.`;
+      }
+    });
+  });
+}
+
+function renderSimonGame() {
+  const colors = ['red', 'blue', 'green', 'yellow'];
+  const labels = ['🔴', '🔵', '🟢', '🟡'];
+  const simon = {
+    sequence: [],
+    userIndex: 0,
+    locked: false,
+    round: 0
+  };
+
+  const wrapper = document.getElementById('gameContent');
+  wrapper.innerHTML = `
+    <div class="game-panel">
+      <h3>Simon Says</h3>
+      <p>Remember the sequence and repeat it perfectly.</p>
+      <div class="simon-grid">
+        ${colors.map((color, index) => `
+          <button class="simon-btn ${color}" data-color="${color}" aria-label="Simon color ${labels[index]}">${labels[index]}</button>
+        `).join('')}
+      </div>
+      <div class="status-row">
+        <span id="simonStatus">Level 1</span>
+        <span>Best: <strong id="simonScore">${state.scores.simon}</strong></span>
+      </div>
+    </div>
+  `;
+
+  const statusEl = document.getElementById('simonStatus');
+  const scoreEl = document.getElementById('simonScore');
+  const buttons = document.querySelectorAll('.simon-btn');
+
+  function flash(color) {
+    const button = document.querySelector(`.simon-btn.${color}`);
+    if (!button) return;
+    button.classList.add('active');
+    setTimeout(() => button.classList.remove('active'), 330);
+  }
+
+  function playSequence() {
+    simon.locked = true;
+    simon.userIndex = 0;
+    let delay = 0;
+
+    simon.sequence.forEach((color) => {
+      delay += 420;
+      setTimeout(() => flash(color), delay);
+    });
+
+    setTimeout(() => {
+      simon.locked = false;
+      statusEl.textContent = `Your turn · Level ${simon.round}`;
+    }, delay + 260);
+  }
+
+  function addNextStep() {
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    simon.sequence.push(color);
+    simon.round += 1;
+    statusEl.textContent = `Watch · Level ${simon.round}`;
+    playSequence();
+  }
+
+  function handleGuess(color) {
+    if (simon.locked) return;
+    flash(color);
+
+    if (simon.sequence[simon.userIndex] !== color) {
+      const best = Math.max(state.scores.simon, simon.round - 1);
+      updateScore('simon', best);
+      scoreEl.textContent = String(state.scores.simon);
+      statusEl.textContent = `Wrong! Final level: ${simon.round - 1}.`;
+      simon.sequence = [];
+      simon.round = 0;
+      simon.userIndex = 0;
+      setTimeout(addNextStep, 1200);
+      return;
+    }
+
+    simon.userIndex += 1;
+
+    if (simon.userIndex === simon.sequence.length) {
+      const best = Math.max(state.scores.simon, simon.round);
+      updateScore('simon', best);
+      scoreEl.textContent = String(state.scores.simon);
+      setTimeout(addNextStep, 800);
+    }
+  }
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => handleGuess(button.dataset.color));
+  });
+
+  addNextStep();
+}
+
+function handleInstallPrompt(event) {
+  event.preventDefault();
+  state.deferredPrompt = event;
+  const button = document.getElementById('installBtn');
+  if (button) button.classList.remove('hidden');
+}
+
+async function installApp() {
+  if (!state.deferredPrompt) return;
+  state.deferredPrompt.prompt();
+  await state.deferredPrompt.userChoice;
+  state.deferredPrompt = null;
+  const button = document.getElementById('installBtn');
+  if (button) button.classList.add('hidden');
+}
+
+function updateOfflineBadge() {
+  const badge = document.getElementById('offlineBadge');
+  if (!badge) return;
+  if (navigator.onLine) {
+    badge.textContent = 'Online';
+    badge.classList.remove('offline');
+  } else {
+    badge.textContent = 'Offline';
+    badge.classList.add('offline');
+  }
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  });
+}
+
+window.addEventListener('online', updateOfflineBadge);
+window.addEventListener('offline', updateOfflineBadge);
+window.addEventListener('beforeinstallprompt', handleInstallPrompt);
+
+window.addEventListener('DOMContentLoaded', () => {
+  updateStats();
+  updateOfflineBadge();
+
+  Object.keys(defaultScores).forEach((key) => {
+    const scoreEl = document.getElementById(`score-${key}`);
+    if (scoreEl) scoreEl.textContent = String(state.scores[key] || 0);
+  });
+
+  document.getElementById('randomGameBtn').addEventListener('click', randomGame);
+  document.getElementById('newRoundBtn').addEventListener('click', () => renderGame());
+  document.getElementById('resetScoresBtn').addEventListener('click', () => {
+    Object.keys(state.scores).forEach((key) => { state.scores[key] = 0; const el = document.getElementById(`score-${key}`); if (el) el.textContent = '0'; });
+    updateStats();
+    saveState();
+  });
+  document.getElementById('installBtn').addEventListener('click', installApp);
+
+  document.querySelectorAll('.game-btn').forEach((button) => {
+    button.addEventListener('click', () => setActiveGame(button.dataset.game));
+  });
+
+  setActiveGame(state.currentGame);
+});

@@ -3,77 +3,87 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#17152b" />
-    <meta name="description" content="Fun Arcade — a polished browser game hub with fast mobile-friendly mini-games." />
+    <meta name="theme-color" content="#111827" />
+    <meta name="description" content="Fun Arcade — crazy arcade vibes, optimized for low-end devices and offline use." />
     <title>Fun Arcade</title>
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%2317152b'/%3E%3Ccircle cx='32' cy='32' r='22' fill='%23ff7ae6'/%3E%3Cpath d='M32 18l5 12h12l-10 7 4 12-11-8-11 8 4-12-10-7h12z' fill='%23fff'/%3E%3C/svg%3E" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%230f172a'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23f472b6'/%3E%3Cpath d='M32 18l5 12h12l-10 7 4 12-11-8-11 8 4-12-10-7h12z' fill='%23fff'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="page-shell">
+    <div class="app-shell">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">Arcade Lounge</p>
-          <h1>Fun Arcade</h1>
+        <div class="brand-wrap">
+          <div class="brand-badge">FA</div>
+          <div>
+            <p class="kicker">Arcade</p>
+            <h1>Fun Arcade</h1>
+          </div>
         </div>
-        <div class="topbar-actions">
-          <button id="installBtn" class="secondary-btn hidden" aria-label="Install app">📲 Install app</button>
-          <button id="randomGameBtn" class="secondary-btn" aria-label="Open a random game">🎲 Random</button>
+
+        <div class="top-actions">
+          <span id="offlineBadge" class="offline-badge">Offline</span>
+          <button id="installBtn" class="mini-btn hidden">Install</button>
+          <button id="randomGameBtn" class="mini-btn accent">Random</button>
         </div>
       </header>
 
-      <section class="stats-row" aria-label="Arcade summary">
-        <article class="stat-card">
-          <span class="stat-label">Total wins</span>
-          <strong id="statWins">0</strong>
-        </article>
-        <article class="stat-card">
-          <span class="stat-label">Best reaction</span>
-          <strong id="statReaction">--</strong>
-        </article>
-        <article class="stat-card">
-          <span class="stat-label">Games played</span>
-          <strong id="statGames">0</strong>
-        </article>
+      <section class="hero-card panel">
+        <div class="hero-copy">
+          <p class="eyebrow">Crazy mode ready</p>
+          <h2>Play hard. Laugh louder.</h2>
+          <p class="subtitle">Super fast mini-games built for weak devices, fast loading, and offline play.</p>
+        </div>
+        <div class="hero-metrics">
+          <div class="metric-box">
+            <span>Wins</span>
+            <strong id="statWins">0</strong>
+          </div>
+          <div class="metric-box">
+            <span>Best React</span>
+            <strong id="statReaction">--</strong>
+          </div>
+          <div class="metric-box">
+            <span>Played</span>
+            <strong id="statGames">0</strong>
+          </div>
+        </div>
       </section>
 
-      <main class="main-layout">
-        <aside class="sidebar">
-          <div class="panel">
-            <h2>Game list</h2>
-            <div class="game-list">
-              <button class="game-btn active" data-game="memory">🧠 Memory Match</button>
-              <button class="game-btn" data-game="tictactoe">⭕ Tic-Tac-Toe</button>
-              <button class="game-btn" data-game="reaction">⚡ Reaction Rush</button>
-              <button class="game-btn" data-game="guess">🎯 Number Guess</button>
-              <button class="game-btn" data-game="rps">✊ Rock Paper Scissors</button>
-              <button class="game-btn" data-game="simon">🎵 Simon Says</button>
-            </div>
-          </div>
+      <main class="layout">
+        <aside class="sidebar panel">
+          <h3>Game vault</h3>
+          <nav class="game-menu" aria-label="Game list">
+            <button class="game-btn active" data-game="memory">🧠 Memory Match</button>
+            <button class="game-btn" data-game="tictactoe">⭕ Tic-Tac-Toe</button>
+            <button class="game-btn" data-game="reaction">⚡ Reaction Rush</button>
+            <button class="game-btn" data-game="guess">🎯 Number Guess</button>
+            <button class="game-btn" data-game="rps">✊ Rock Paper</button>
+            <button class="game-btn" data-game="simon">🎵 Simon</button>
+          </nav>
 
-          <div class="panel score-panel">
-            <h2>Scoreboard</h2>
+          <div class="score-panel">
+            <h4>Scores</h4>
             <div class="score-row"><span>Memory</span><strong id="score-memory">0</strong></div>
             <div class="score-row"><span>Tic Tac Toe</span><strong id="score-tictactoe">0</strong></div>
             <div class="score-row"><span>Reaction</span><strong id="score-reaction">0</strong></div>
             <div class="score-row"><span>Guess</span><strong id="score-guess">0</strong></div>
             <div class="score-row"><span>RPS</span><strong id="score-rps">0</strong></div>
             <div class="score-row"><span>Simon</span><strong id="score-simon">0</strong></div>
-            <button id="resetScoresBtn" class="ghost-btn" aria-label="Reset all scores">Reset scores</button>
+            <button id="resetScoresBtn" class="mini-btn clear">Reset</button>
           </div>
         </aside>
 
-        <section class="game-stage">
-          <div class="panel stage-header">
+        <section class="main-panel panel">
+          <div class="main-header">
             <div>
-              <p class="eyebrow">Current game</p>
+              <p class="kicker">Now playing</p>
               <h2 id="gameTitle">Memory Match</h2>
             </div>
-            <button id="newRoundBtn" class="primary-btn" aria-label="Play a new round">New round</button>
+            <button id="newRoundBtn" class="primary-btn">New round</button>
           </div>
 
           <div id="gameContent" aria-live="polite"></div>
