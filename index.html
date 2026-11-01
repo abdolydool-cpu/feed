@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fun Arcade</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Arcade Lounge</p>
+          <h1>Fun Hub</h1>
+        </div>
+        <button id="randomGameBtn" class="secondary-btn">🎲 Random challenge</button>
+      </header>
+
+      <main class="main-layout">
+        <aside class="sidebar">
+          <div class="panel">
+            <h2>Pick a Game</h2>
+            <div class="game-list">
+              <button class="game-btn active" data-game="memory">🧠 Memory Match</button>
+              <button class="game-btn" data-game="tictactoe">⭕ Tic-Tac-Toe</button>
+              <button class="game-btn" data-game="reaction">⚡ Reaction Rush</button>
+              <button class="game-btn" data-game="guess">🎯 Number Guess</button>
+            </div>
+          </div>
+
+          <div class="panel score-panel">
+            <h2>Scoreboard</h2>
+            <div class="score-row"><span>Memory</span><strong id="score-memory">0</strong></div>
+            <div class="score-row"><span>Tic Tac Toe</span><strong id="score-tictactoe">0</strong></div>
+            <div class="score-row"><span>Reaction</span><strong id="score-reaction">0</strong></div>
+            <div class="score-row"><span>Guess</span><strong id="score-guess">0</strong></div>
+            <button id="resetScoresBtn" class="ghost-btn">Reset scores</button>
+          </div>
+        </aside>
+
+        <section class="game-stage">
+          <div class="panel stage-header">
+            <div>
+              <p class="eyebrow">Current game</p>
+              <h2 id="gameTitle">Memory Match</h2>
+            </div>
+            <button id="newRoundBtn" class="primary-btn">New round</button>
+          </div>
+
+          <div id="gameContent"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
